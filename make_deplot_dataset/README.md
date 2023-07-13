@@ -6,6 +6,7 @@
 
 ・作成されたcsvファイルは，[image_pth], [caption], [output_deplot] の３つの要素を含んでいる．
 
+・データの処理範囲を複数に分けて実行し，時間短縮を図った．.scv ファイルの結合コードは ```add_csv.py``` です．
 
 ## 補足
 データセット：cv_ml_figures.tar.gz
