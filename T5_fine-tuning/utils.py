@@ -27,13 +27,14 @@ def training(model, tokenizer, train_loader, test_loader, optimizer, scheduler, 
             pbar.set_description(f'[train epoch : {epoch}]')
             # 学習モードに設定
             model.train()
-            sum_loss = 0.0
-            sum_num=0
+            sum_train_loss = 0.0
+            train_loss=0.0
+            train_count=0
 
             for _, caption, deplot_text in pbar:
 
                 #print(image_ids)
-                sum_num+=1
+                train_count+=1
 
                 caption = tokenizer(caption, padding='max_length', max_length=max_target_length, truncation=True, return_tensors='pt')
                 deplot_text = tokenizer(deplot_text, padding='max_length', max_length=max_source_length, truncation=True, return_tensors='pt')
@@ -52,16 +53,16 @@ def training(model, tokenizer, train_loader, test_loader, optimizer, scheduler, 
                 
                 loss = outputs.loss.mean()
 
-                sum_loss += loss.item()
+                sum_train_loss += loss.item()
 
                 #print(loss)
                 
                 loss.backward()
                 optimizer.step()
 
-                pbar.set_postfix(OrderedDict(loss=loss.item(), ave_loss=sum_loss/sum_num, lr = optimizer.param_groups[0]['lr']))
+                pbar.set_postfix(OrderedDict(loss=loss.item(), ave_loss=sum_train_loss/train_count, lr = optimizer.param_groups[0]['lr']))
             
-            train_loss=sum_loss/sum_num
+            train_loss=sum_train_loss/train_count
             scheduler.step()
         
         with tqdm(test_loader) as pbar:
@@ -70,11 +71,12 @@ def training(model, tokenizer, train_loader, test_loader, optimizer, scheduler, 
             # 学習モードに設定
             model.eval()
             sum_val_loss = 0.0
-            sum_num=0
+            val_loss=0.0
+            val_count=0
 
             for _, caption, deplot_text in pbar:
 
-                sum_num += 1
+                val_count += 1
 
                 caption = tokenizer(caption, padding='max_length', max_length=max_target_length, truncation=True, return_tensors='pt')
                 deplot_text = tokenizer(deplot_text, padding='max_length', max_length=max_source_length, truncation=True, return_tensors='pt')
@@ -95,9 +97,9 @@ def training(model, tokenizer, train_loader, test_loader, optimizer, scheduler, 
 
                 sum_val_loss += loss.item()
 
-                pbar.set_postfix(OrderedDict(loss=loss.item(), ave_loss=sum_val_loss/sum_num))
+                pbar.set_postfix(OrderedDict(loss=loss.item(), ave_loss=sum_val_loss/val_count))
 
-            val_loss=sum_loss/sum_num
+            val_loss=sum_val_loss/val_count
         
         torch.save(model.state_dict(), record_dir+"/epoch_"+str(epoch)+".pth")
 
