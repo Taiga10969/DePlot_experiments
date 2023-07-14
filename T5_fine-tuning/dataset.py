@@ -1,9 +1,4 @@
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import torch.distributed as dist
 from torch.utils.data import Dataset
-from torch.utils.data import DataLoader
 
 import pandas as pd
 import configs
@@ -24,9 +19,9 @@ class  DePlotDataset(Dataset):
         caption = self.data.iloc[index, 1]
         deplot_text = self.data.iloc[index, 2]
 
-        if self.change_id == True:
-            caption = self.tokenizer(caption, padding='longest', max_length=self.max_target_length, truncation=True, return_tensors='pt')
-            deplot_text = self.tokenizer(deplot_text, padding='longest', max_length=self.max_source_length, truncation=True, return_tensors='pt')
+        if self.change_id and self.tokenizer is not None:
+            caption = self.tokenizer(caption, padding='max_length', max_length=self.max_target_length, truncation=True, return_tensors='pt')
+            deplot_text = self.tokenizer(deplot_text, padding='max_length', max_length=self.max_source_length, truncation=True, return_tensors='pt')
 
         return img_pth, caption, deplot_text
     
@@ -49,19 +44,19 @@ if __name__=='__main__':
                             change_id=False, 
                             tokenizer=None)
     print('len(dataset) : ', len(dataset))
-    img_pth, caption, deplot_text = dataset[1]
+    img_pth, caption, deplot_text = dataset[3]
     print('img_pth : ', img_pth)
     print('caption : ', caption)
     print('deplot_text : ', deplot_text)
 
     # exsample : TESTデータ，ID化
-    dataset = DePlotDataset(csv_path=config.dataset_TEST_csv_file_path, 
+    dataset = DePlotDataset(csv_path=config.dataset_TRAIN_csv_file_path, 
                             max_source_length=config.max_source_length, 
                             max_target_length=config.max_target_length, 
                             change_id=True, 
                             tokenizer=tokenizer)
     
-    img_pth, caption, deplot_text = dataset[1]
+    img_pth, caption, deplot_text = dataset[17]
     print('img_pth : ', img_pth)
     print('caption : ', caption['input_ids'])
     print('deplot_text : ', deplot_text['input_ids'])
