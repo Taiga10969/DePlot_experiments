@@ -8,6 +8,9 @@ import pandas as pd
 from collections import OrderedDict
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+#from nltk.translate.bleu_score import sentence_bleu
+
+from torchtext.data.metrics import bleu_score
 
 def setup_torch_seed(seed=1):
     # pytorchに関連する乱数シードの固定を行う．
@@ -139,3 +142,33 @@ def plot_learning_rate(optimizer, lr_scheduler, num_epochs):
     plt.savefig('learning_rate_scheduler.svg')
     plt.savefig('learning_rate_scheduler.png')
     plt.close()
+
+'''
+def calculate_bleu_score(candidate, references):
+    # BLEUスコアを計算するために、参照テキストをリストに変換する
+    references = [references.split()]
+
+    # 生成されたテキストをトークン化してリストに変換する
+    candidate = candidate.split()
+
+    # BLEUスコアを計算する
+    bleu_score = sentence_bleu(references, candidate)
+
+    return bleu_score
+'''
+
+
+# BLEUスコアを計算する関数
+def calculate_bleu_score(reference, hypothesis, max_n=4):
+    reference = [[reference.split()]]
+    hypothesis = [hypothesis.split()]
+    belu_score_list = []
+
+    for n in range(1,max_n+1,1):
+        weights = [1.0 / n] * n  # 均等な重みを指定
+        bs = bleu_score(hypothesis, reference, max_n=n, weights=weights)
+        belu_score_list.append(bs)
+    
+    return belu_score_list
+
+
